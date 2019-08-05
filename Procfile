@@ -1,1 +1,1 @@
-web: gunicorn calculator.wsgi --log-file -
+web: gunicorn spark_resource_calculator.wsgi --log-file -
