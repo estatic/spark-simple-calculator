@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Spark submit command variables simple calculator">
+    <meta name="author" content="Ivan Grunev">
+    <title>Simple Spark application resources calculator</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body class="d-flex flex-column h-100">
+<!-- Begin page content -->
+<main role="main" class="flex-shrink-0">
+    <div class="container">
+        <h1 class="mt-5">Simple Spark application resources calculator</h1>
+        <p class="lead">Please enter cluster configuration below</p>
+        <p>Number of nodes: <input type="text" name="nodes" id="nodes" value="1"/></p>
+        <p>Number of cores: <input type="text" name="cores" id="cores" value="2"/></p>
+        <p>Memory: <input type="text" name="memory" id="memory" value="4"/></p>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="1" id="hive">
+          <label class="form-check-label" for="hive">
+            I have hive on the same cluster (quater of cores must be used for HIVE)
+          </label>
+        </div>
+        <p>Results
+            <div>
+        <p>Total cores: <span id="total_cores"></span></p>
+        <p>Total available cores: <span id="total_av_cores"></span></p>
+        <p>Total memory: <span id="total_memory"></span></p>
+    </div>
+    <div>
+        <span id="results">
+            <span>--num-executors </span><span id="number_executors"></span>
+            <span>--executor-cores </span><span id="number_cores"></span>
+        <span>--executor-memory </span><span id="executer_memory"></span>
+        </span>
+    </div>
+    </p>
+    </div>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script>
+    $(document).ready(function () {
+        var cores_took = 2;
+
+        var has_hive = function(aaa){
+            var checked = $('#hive').is(':checked');
+            if (checked) {
+                var cores = parseInt($('#cores').val());
+
+                return Math.floor(cores * 0.25);
+            }
+            return 0;
+        };
+
+        var calculate = function () {
+            var nodes = parseInt($('#nodes').val());
+            var cores = parseInt($('#cores').val());
+            var memory = parseInt($('#memory').val());
+
+            var cores_out = cores_took + has_hive();
+            var total_cores = nodes * cores;
+            var total_memory = memory * nodes;
+            var executors = nodes * (cores - cores_out);
+            var executor_cores = Math.floor(executors / cores);
+            executors = Math.floor((total_cores - (nodes * cores_out))/executor_cores);
+            var executor_memory = Math.floor((total_memory / (executors * executor_cores)) * (1 - 0.07));
+
+            $('#total_cores').text(total_cores);
+            $('#total_av_cores').text((cores - cores_out) * nodes);
+            $('#total_memory').text(total_cores - has_hive());
+
+            $('#number_executors').text(executors);
+            $('#number_cores').text(executor_cores);
+            $('#executer_memory').text(executor_memory);
+        };
+        $('#nodes').change(function () {
+            calculate();
+        });
+
+        $('#nodes').keyup(function () {
+            calculate();
+        });
+
+        $('#cores').change(function () {
+            calculate();
+        });
+
+        $('#cores').keyup(function () {
+            calculate();
+        });
+
+        $('#memory').change(function () {
+            calculate();
+        });
+
+        $('#memory').keyup(function () {
+            calculate();
+        });
+
+         $('#hive').change(function () {
+             console.log("checked: " + this.checked);
+            calculate();
+        });
+        calculate();
+    });
+</script>
+</body>
+</html>
